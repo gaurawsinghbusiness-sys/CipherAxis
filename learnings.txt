@@ -1,0 +1,11 @@
+# CipherAxis Learnings & Mistakes Log
+# ====================================
+# A record of painful lessons so we never repeat them.
+
+1. Do NOT put important code in .gitignore
+   - Date: 2026-02-03
+   - What happened: Added Agents/CustomAgents/ to .gitignore to "hide" it from public.
+   - Result: Render deployment failed because the files were never pushed to GitHub.
+   - Fix: Use a PRIVATE REPO instead of .gitignore to hide sensitive code.
+   - Time wasted: ~30 minutes of debugging "module not found" errors.
+

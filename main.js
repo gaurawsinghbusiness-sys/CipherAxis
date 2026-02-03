@@ -78,15 +78,19 @@ class CipherAxisSystem {
 
         console.log('[CipherAxis] All 20 agents registered successfully!');
 
-        // Start hidden Security Layer
-        await guardianAgent.monitor();
-        await cerberusAgent.monitor();
-
-        console.log('[CipherAxis] Security layer active (ARGUS + CERBERUS)');
+        // Start hidden Security Layer (NON-BLOCKING to prevent deploy hang)
+        try {
+            guardianAgent.monitor().catch(e => console.log('[ARGUS] Monitor init skipped:', e.message));
+            cerberusAgent.monitor().catch(e => console.log('[CERBERUS] Monitor init skipped:', e.message));
+            console.log('[CipherAxis] Security layer activation started (ARGUS + CERBERUS)');
+        } catch (e) {
+            console.log('[CipherAxis] Security layer init skipped:', e.message);
+        }
         
         // Start monitoring loop (hourly)
         setInterval(() => monitoringAgent.run(), 60000 * 60);
         console.log('[CipherAxis] Monitoring loop started (1h interval)');
+        console.log('[CipherAxis] ✅ System initialization complete!');
     }
 
     async injectFeedback(emailContent) {
