@@ -1,0 +1,15 @@
+.vercel
+node_modules/
+.env
+logs/
+
+# Private Development Files (Do NOT commit)
+GAURAW_CHECKLIST.md
+ARCHITECTURE.md
+HACKATHON_MISSION.md
+JUDGE_SCENARIOS.md
+LLM_GOVERNANCE.md
+PITCH_SCRIPT.md
+PRE_IMPLEMENTATION_CHECKLIST.md
+README.md
+Backup_Checklists/

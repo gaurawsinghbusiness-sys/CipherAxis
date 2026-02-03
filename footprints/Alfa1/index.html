@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Calculator - Iteration 0</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #000;
+            color: #0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .calculator {
+            border: 2px solid #0f0;
+            padding: 20px;
+            background-color: #111;
+        }
+        .display {
+            width: 100%;
+            height: 40px;
+            background-color: #222;
+            border: 1px solid #0f0;
+            color: #0f0;
+            text-align: right;
+            padding: 5px;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+    </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="calculator">
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleSignIn"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+        <div id="user-info" style="color: #0f0; font-size: 0.7rem; margin: 10px 0;">Not Signed In</div>
+
+        <div id="display" class="display">0</div>
+        <div class="buttons">
+            <button onclick="append('7')">7</button>
+            <button onclick="append('8')">8</button>
+            <button onclick="append('9')">9</button>
+            <button onclick="setOp('+')">+</button>
+            <button onclick="append('4')">4</button>
+            <button onclick="append('5')">5</button>
+            <button onclick="append('6')">6</button>
+            <button onclick="calculate()">=</button>
+            <button onclick="append('1')">1</button>
+            <button onclick="append('2')">2</button>
+            <button onclick="append('3')">3</button>
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="append('0')">0</button>
+        </div>
+    </div>
+
+    <script>
+        let currentDisplay = '0';
+        let firstOperand = null;
+        let operator = null;
+        let waitingForSecondOperand = false;
+
+        function updateDisplay() {
+            document.getElementById('display').innerText = currentDisplay;
+        }
+
+        function handleSignIn(response) {
+            const body = JSON.parse(atob(response.credential.split('.')[1]));
+            console.log("Logged in as: " + body.name);
+            document.getElementById('user-info').innerText = "Logged in as: " + body.name;
+            
+            // Notify agents via backend
+            fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'USER_LOGIN',
+                    user: { name: body.name, email: body.email, picture: body.picture }
+                })
+            });
+        }
+
+        function append(digit) {
+            if (waitingForSecondOperand) {
+                currentDisplay = digit;
+                waitingForSecondOperand = false;
+            } else {
+                currentDisplay = currentDisplay === '0' ? digit : currentDisplay + digit;
+            }
+            updateDisplay();
+        }
+
+        function setOp(op) {
+            firstOperand = parseInt(currentDisplay);
+            operator = op;
+            waitingForSecondOperand = true;
+        }
+
+        function calculate() {
+            if (operator === '+') {
+                const secondOperand = parseInt(currentDisplay);
+                currentDisplay = (firstOperand + secondOperand).toString();
+                operator = null;
+                updateDisplay();
+            }
+        }
+
+        function clearDisplay() {
+            currentDisplay = '0';
+            firstOperand = null;
+            operator = null;
+            waitingForSecondOperand = false;
+            updateDisplay();
+        }
+    </script>
+</body>
+</html>

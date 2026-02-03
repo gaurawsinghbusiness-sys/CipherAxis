@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipherAxis - Mission Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00ffff, #00ff88);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .logo span {
+            color: #666;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.active { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
+        .status-dot.warning { background: #ffaa00; box-shadow: 0 0 10px #ffaa00; }
+        .status-dot.error { background: #ff4444; box-shadow: 0 0 10px #ff4444; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 350px;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 80px);
+        }
+
+        /* Panels */
+        .panel {
+            background: rgba(0, 10, 30, 0.8);
+            border: 1px solid rgba(0, 255, 255, 0.15);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: rgba(0, 255, 255, 0.08);
+            padding: 12px 16px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-content {
+            padding: 15px;
+            overflow-y: auto;
+            max-height: calc(100% - 50px);
+        }
+
+        /* Agent List */
+        .agent-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card.running {
+            border-left-color: #00ff88;
+            background: rgba(0, 255, 136, 0.08);
+        }
+
+        .agent-card.idle {
+            border-left-color: #666;
+        }
+
+        .agent-card.paused {
+            border-left-color: #ffaa00;
+            background: rgba(255, 170, 0, 0.08);
+        }
+
+        .agent-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .agent-info h4 {
+            font-size: 0.9rem;
+            color: #00ffff;
+            margin-bottom: 3px;
+        }
+
+        .agent-info p {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .agent-status {
+            margin-left: auto;
+            font-size: 0.65rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+
+        .agent-status.running {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .agent-status.idle {
+            background: rgba(100, 100, 100, 0.2);
+            color: #888;
+        }
+
+        .agent-status.paused {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffaa00;
+        }
+
+        /* Calculator Preview */
+        .calculator-preview {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .calculator-frame {
+            flex: 1;
+            border: none;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .preview-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .preview-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            font-size: 0.75rem;
+        }
+
+        .activity-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .activity-item .timestamp {
+            color: rgba(0, 255, 255, 0.5);
+            font-size: 0.65rem;
+            margin-right: 8px;
+        }
+
+        .activity-item .agent-name {
+            color: #00ff88;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
+        }
+
+        .activity-item .message {
+            color: #e0e0e0;
+            margin-top: 4px;
+            line-height: 1.5;
+            padding-left: 10px;
+            border-left: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .activity-item.system { color: #5555ff; border-left: 3px solid #5555ff; }
+        .activity-item.success { color: #00ff00; border-left: 3px solid #00ff00; }
+        .activity-item.error { color: #ff0000; border-left: 3px solid #ff0000; background: rgba(255,0,0,0.05); }
+        .activity-item:last-child { border-bottom: none; }
+
+        /* Rate Limiter Section */
+        .rate-meter {
+            margin: 15px 0;
+        }
+
+        .rate-meter h5 {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .rate-bar {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .rate-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .rate-fill.gemini3 {
+            background: linear-gradient(90deg, #00ffff, #00ff88);
+            width: 25%;
+        }
+
+        .rate-fill.flash {
+            background: linear-gradient(90deg, #ffaa00, #ff6600);
+            width: 40%;
+        }
+
+        .rate-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Security Shield */
+        .shield-status {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .shield-card {
+            flex: 1;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .shield-card.active {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .shield-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .shield-name {
+            font-size: 0.75rem;
+            color: #00ffff;
+        }
+
+        .shield-status-text {
+            font-size: 0.65rem;
+            color: #00ff88;
+            margin-top: 4px;
+        }
+
+        /* Marathon Progress */
+        .marathon-progress {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .marathon-phases {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .phase {
+            font-size: 0.7rem;
+            padding: 5px 12px;
+            border-radius: 12px;
+            background: rgba(100, 100, 100, 0.3);
+            color: #888;
+        }
+
+        .phase.active {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .phase.completed {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .progress-track {
+            height: 6px;
+            background: rgba(100, 100, 100, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 25%;
+            background: linear-gradient(90deg, #00ffff, #00ff88);
+            border-radius: 3px;
+            animation: progressPulse 2s infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.7rem;
+            color: #555;
+            border-top: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        /* Command Center */
+        .command-center {
+            grid-column: 1 / -1;
+            padding: 20px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            gap: 15px;
+            margin-top: -10px;
+        }
+
+        .command-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: #00ffff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .command-input:focus {
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+
+        .command-btn {
+            background: linear-gradient(90deg, #00ffff, #00ff88);
+            border: none;
+            padding: 0 30px;
+            border-radius: 8px;
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .command-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+        }
+
+        .agent-card.working {
+            animation: agentGlow 1.5s infinite alternate;
+            border-left-color: #00ffff !important;
+            background: rgba(0, 255, 255, 0.1) !important;
+        }
+
+        @keyframes agentGlow {
+            from { box-shadow: 0 0 5px rgba(0, 255, 255, 0.1); }
+            to { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            CIPHERAXIS <span>Mission Control v1.0</span>
+        </div>
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot active"></div>
+                <span>System Online</span>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot active"></div>
+                <span id="agentCount">20 Agents</span>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot warning"></div>
+                <span id="rpmStatus">RPM: 2/4</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Agent Roster Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>🤖 Agent Roster</span>
+                <span style="color: #00ff88;">5 Active</span>
+            </div>
+            <div class="panel-content">
+                <!-- Security Layer -->
+                <div class="agent-card running">
+                    <div class="agent-icon">🛡️</div>
+                    <div class="agent-info">
+                        <h4>ARGUS</h4>
+                        <p>Content Security</p>
+                    </div>
+                    <span class="agent-status running">Running</span>
+                </div>
+                <div class="agent-card running">
+                    <div class="agent-icon">🐕</div>
+                    <div class="agent-info">
+                        <h4>CERBERUS</h4>
+                        <p>Behavioral Monitor</p>
+                    </div>
+                    <span class="agent-status running">Running</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">⚖️</div>
+                    <div class="agent-info">
+                        <h4>ETHOS</h4>
+                        <p>Ethics Guard</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">🔑</div>
+                    <div class="agent-info">
+                        <h4>KEY</h4>
+                        <p>Identity Agent</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+
+                <!-- Strategy Layer -->
+                <div class="agent-card idle">
+                    <div class="agent-icon">🔗</div>
+                    <div class="agent-info">
+                        <h4>NEXUS</h4>
+                        <p>Google Bridge</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card paused">
+                    <div class="agent-icon">📊</div>
+                    <div class="agent-info">
+                        <h4>ECHO</h4>
+                        <p>Userbase Analyst</p>
+                    </div>
+                    <span class="agent-status paused">Paused</span>
+                </div>
+
+                <!-- Math Core -->
+                <div class="agent-card idle">
+                    <div class="agent-icon">🧮</div>
+                    <div class="agent-info">
+                        <h4>NEWTON</h4>
+                        <p>Math Engine</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">📐</div>
+                    <div class="agent-info">
+                        <h4>EULER</h4>
+                        <p>Precision Audit</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+
+                <!-- Creative Forge -->
+                <div class="agent-card running">
+                    <div class="agent-icon">🏛️</div>
+                    <div class="agent-info">
+                        <h4>ARCHIMEDES</h4>
+                        <p>Solver Agent</p>
+                    </div>
+                    <span class="agent-status running">Running</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">🎨</div>
+                    <div class="agent-info">
+                        <h4>PRISM</h4>
+                        <p>Style Architect</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card running">
+                    <div class="agent-icon">🔥</div>
+                    <div class="agent-info">
+                        <h4>VULCAN</h4>
+                        <p>Code Agent</p>
+                    </div>
+                    <span class="agent-status running">Running</span>
+                </div>
+
+                <!-- Quality Gate -->
+                <div class="agent-card idle">
+                    <div class="agent-icon">⚖️</div>
+                    <div class="agent-info">
+                        <h4>JUDGE</h4>
+                        <p>Unit Test Agent</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">👁️</div>
+                    <div class="agent-info">
+                        <h4>SIGHT</h4>
+                        <p>Browser Verification</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card running">
+                    <div class="agent-icon">👑</div>
+                    <div class="agent-info">
+                        <h4>PRIME</h4>
+                        <p>Leader Agent</p>
+                    </div>
+                    <span class="agent-status running">Running</span>
+                </div>
+
+                <!-- Ops Layer -->
+                <div class="agent-card idle">
+                    <div class="agent-icon">🚀</div>
+                    <div class="agent-info">
+                        <h4>NOVA</h4>
+                        <p>Deploy Agent</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card running">
+                    <div class="agent-icon">📡</div>
+                    <div class="agent-info">
+                        <h4>SENTINEL</h4>
+                        <p>Monitoring Agent</p>
+                    </div>
+                    <span class="agent-status running">Running</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">🩺</div>
+                    <div class="agent-info">
+                        <h4>MEDIC</h4>
+                        <p>Diagnostic Agent</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+
+                <!-- Testing Squad -->
+                <div class="agent-card idle">
+                    <div class="agent-icon">🗺️</div>
+                    <div class="agent-info">
+                        <h4>ATLAS</h4>
+                        <p>E2E Tester</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">👻</div>
+                    <div class="agent-info">
+                        <h4>PHANTOM</h4>
+                        <p>Stress Tester</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+                <div class="agent-card idle">
+                    <div class="agent-icon">🔮</div>
+                    <div class="agent-info">
+                        <h4>ORACLE</h4>
+                        <p>Regression Tester</p>
+                    </div>
+                    <span class="agent-status idle">Idle</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculator Preview -->
+        <div class="panel calculator-preview">
+            <div class="panel-header">
+                <span>🖥️ Mission Control Preview</span>
+                <span class="badge" style="background: #ffaa00; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; font-family: 'Orbitron'; margin-left: 10px;">DEV SANDBOX</span>
+                <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+                    <button id="refreshPreviewBtn" class="action-btn" style="background: transparent; border: 1px solid #00ffff; color: #00ffff; padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; cursor: pointer;">🔄 REFRESH</button>
+                    <button id="promoteBtn" class="action-btn" style="background: #00ff88; border: none; color: #000; padding: 2px 12px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; cursor: pointer; font-family: 'Orbitron';">🚀 PUSH TO PRODUCTION</button>
+                </div>
+            </div>
+            <iframe src="app_dev.html" class="calculator-frame"></iframe>
+            <div class="panel-footer" style="padding: 10px; display: flex; justify-content: space-between; border-top: 1px solid rgba(0, 255, 255, 0.1);">
+                <a href="app_dev.html" target="_blank" style="color: #00ffff; font-size: 0.7rem; text-decoration: none;">🔗 Open Dev Sandbox in new tab</a>
+                <a href="index.html" target="_blank" style="color: #00ff88; font-size: 0.7rem; text-decoration: none;">🌍 View Production Site</a>
+            </div>
+            <div class="preview-controls">
+                <button class="preview-btn" onclick="document.querySelector('.calculator-frame').src = 'app_dev.html'">↻ Refresh</button>
+                <button class="preview-btn" onclick="window.open('app_dev.html', '_blank')">↗ Open in New Tab</button>
+            </div>
+        </div>
+
+        <!-- Activity & Stats Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>📡 System Status</span>
+            </div>
+            <div class="panel-content">
+                <!-- Marathon Progress -->
+                <div class="marathon-progress">
+                    <div class="marathon-phases">
+                        <span class="phase active">ALFA</span>
+                        <span class="phase">BETA</span>
+                        <span class="phase">GAMMA</span>
+                        <span class="phase">X</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Rate Limiters -->
+                <div class="rate-meter">
+                    <h5>Gemini 3 Flash (Strategic)</h5>
+                    <div class="rate-bar">
+                        <div class="rate-fill gemini3"></div>
+                    </div>
+                    <div class="rate-label">
+                        <span>1 / 4 RPM</span>
+                        <span>Cooldown: 45s</span>
+                    </div>
+                </div>
+
+                <div class="rate-meter">
+                    <h5>Gemini 1.5 Flash (Workers)</h5>
+                    <div class="rate-bar">
+                        <div class="rate-fill flash"></div>
+                    </div>
+                    <div class="rate-label">
+                        <span>6 / 15 RPM</span>
+                        <span>Healthy</span>
+                    </div>
+                </div>
+
+                </div>
+
+                <!-- Crowd Intelligence Feed -->
+                <h5 style="color: #00ffff; margin: 20px 0 10px; font-size: 0.75rem;">📡 Crowd Intelligence Feed</h5>
+                <div id="feedbackHub" style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 10px; height: 180px; overflow-y: auto; border: 1px solid rgba(0, 255, 255, 0.1); font-size: 0.7rem;">
+                    <div style="color: #666; font-style: italic; text-align: center; margin-top: 70px;">Listening for external feedback...</div>
+                </div>
+
+                <!-- Activity Feed -->
+                <h5 style="color: #888; margin: 20px 0 10px; font-size: 0.75rem;">📜 Live Activity Feed</h5>
+                <div class="activity-feed" id="activityFeed">
+                    <div class="activity-item">
+                        <span class="timestamp">11:19:27</span>
+                        <span class="agent-name">[SENTINEL]</span>
+                        <div class="message">System health check: All services operational.</div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="timestamp">11:19:15</span>
+                        <span class="agent-name">[ARGUS]</span>
+                        <div class="message">Security scan complete. No threats detected.</div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="timestamp">11:18:50</span>
+                        <span class="agent-name">[VULCAN]</span>
+                        <div class="message">Waiting for next development task...</div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="timestamp">11:18:30</span>
+                        <span class="agent-name">[PRIME]</span>
+                        <div class="message">Alfa1 deployment confirmed. Monitoring for issues.</div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="timestamp">11:18:00</span>
+                        <span class="agent-name">[ARCHIMEDES]</span>
+                        <div class="message">Received feedback: "Add more operations"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div style="padding: 0 20px 20px;">
+        <div class="command-center">
+            <input type="text" class="command-input" id="missionRequest" placeholder="Enter feature request or system command (e.g. 'Add a Dark Mode toggle')">
+            <button class="command-btn" id="startMissionBtn">EXECUTE MISSION</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © Created by Gauraw. A Hackathon Project. | CipherAxis v1.0
+    </footer>
+
+    <script>
+        // WebSocket Connection for Real-Time Updates
+        const WS_URL = window.location.protocol === 'https:' 
+            ? `wss://${window.location.host}` 
+            : `ws://${window.location.hostname}:3000`;
+        
+        let ws = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+
+        // Initialize WebSocket connection
+        function connectWebSocket() {
+            console.log('[Dashboard] Connecting to WebSocket:', WS_URL);
+            
+            ws = new WebSocket(WS_URL);
+            
+            ws.onopen = () => {
+                console.log('[Dashboard] WebSocket connected!');
+                reconnectAttempts = 0;
+                updateConnectionStatus('connected');
+                addActivity('SYSTEM', 'Connected to CipherAxis Mission Control');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            ws.onclose = () => {
+                console.log('[Dashboard] WebSocket disconnected');
+                updateConnectionStatus('disconnected');
+                
+                // Attempt reconnect
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    setTimeout(connectWebSocket, 3000);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('[Dashboard] WebSocket error:', error);
+                updateConnectionStatus('error');
+            };
+        }
+
+        // Promote to Production
+        document.getElementById('promoteBtn').addEventListener('click', async () => {
+            if (!confirm('🚀 This will overwrite the live index.html with the current DEV sandbox. Proceed?')) return;
+            
+            addActivity('SYSTEM', 'Initiating Production Push...', 'system');
+            try {
+                const response = await fetch('/api/promote', { method: 'POST' });
+                const result = await response.json();
+                if (result.status === 'promotion_triggered') {
+                    addActivity('SYSTEM', 'Promotion signal broadcasted to NOVA.', 'success');
+                }
+            } catch (error) {
+                addActivity('SYSTEM', `Promotion failed: ${error.message}`, 'error');
+            }
+        });
+
+        // Refresh Preview
+        document.getElementById('refreshPreviewBtn').addEventListener('click', () => {
+            const iframe = document.querySelector('.calculator-frame');
+            iframe.src = 'app_dev.html?v=' + Date.now();
+            addActivity('SYSTEM', 'Preview refreshed.', 'system');
+        });
+
+        // Handle incoming WebSocket messages
+        function handleWebSocketMessage(data) {
+            console.log('[Dashboard] Message received:', data);
+            
+            switch (data.type) {
+                case 'CONNECTION':
+                    addActivity('SYSTEM', data.message, 'system');
+                    break;
+                case 'MISSION_START':
+                    addActivity('SYSTEM', `New Mission: ${data.request}`, 'system');
+                    updateGlobalStatus('Mission in Progress...', 'warning');
+                    updateMarathonPhase('BETA'); // Move to BETA phase
+                    break;
+                case 'AGENT_LOG':
+                    addActivity(data.agent, data.message, data.severity || 'info');
+                    if (data.severity === 'error' && data.message.includes('MISSION REJECTED')) {
+                        updateGlobalStatus('Mission Failed/Rejected', 'error');
+                        setTimeout(() => updateGlobalStatus('System Online', 'active'), 5000);
+                    }
+                    break;
+                case 'AGENT_STATUS_UPDATE':
+                    updateAgentStatus(data.agent, data.status);
+                    break;
+                case 'USER_FEEDBACK':
+                case 'COMPLAINT_SUBMITTED':
+                    const fbSource = data.type === 'USER_FEEDBACK' ? 'G-SHEETS' : 'CALC-APP';
+                    const fbContent = data.feedback || data.complaint;
+                    addActivity('CROWD', `💬 [${fbSource}] "${fbContent}"`, 'working');
+                    break;
+                case 'CODE_DEPLOYED':
+                    addActivity('SYSTEM', `Deployment Successful (v${data.version})`, 'success');
+                    updateGlobalStatus('System Online', 'active');
+                    // Refresh calculator frame
+                    setTimeout(() => {
+                        document.querySelector('.calculator-frame').src = 'app_dev.html?v=' + Date.now();
+                    }, 1000);
+                    break;
+                default:
+                    console.log('[Dashboard] Unhandled message type:', data.type);
+            }
+        }
+
+        function updateGlobalStatus(text, type) {
+            const statusIndicator = document.querySelector('.status-indicator span');
+            const statusDot = document.querySelector('.status-dot');
+            statusIndicator.textContent = text;
+            statusDot.className = `status-dot ${type}`;
+        }
+
+        function updateMarathonPhase(phaseName) {
+            const phases = document.querySelectorAll('.phase');
+            phases.forEach(p => {
+                p.classList.remove('active', 'completed');
+                if (p.textContent === phaseName) {
+                    p.classList.add('active');
+                } else if (['ALFA', 'BETA', 'GAMMA', 'X'].indexOf(p.textContent) < ['ALFA', 'BETA', 'GAMMA', 'X'].indexOf(phaseName)) {
+                    p.classList.add('completed');
+                }
+            });
+            
+            // Update progress bar width
+            const progressFill = document.querySelector('.progress-fill');
+            const index = ['ALFA', 'BETA', 'GAMMA', 'X'].indexOf(phaseName);
+            progressFill.style.width = `${(index + 1) * 25}%`;
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(status) {
+            const statusDot = document.querySelector('.status-bar .status-dot');
+            statusDot.className = 'status-dot';
+            
+            if (status === 'connected') {
+                statusDot.classList.add('active');
+            } else if (status === 'disconnected') {
+                statusDot.classList.add('warning');
+            } else {
+                statusDot.classList.add('error');
+            }
+        }
+
+        // Add activity to the feed
+        function addActivity(agent, message, type = '') {
+            const feed = document.getElementById('activityFeed');
+            const now = new Date();
+            const timestamp = now.toTimeString().split(' ')[0].substring(0, 8);
+            
+            // Auto-detect error severity if not explicitly passed
+            if (message.includes('❌') || message.includes('ERROR')) {
+                type = 'error';
+            }
+            
+            const item = document.createElement('div');
+            item.className = `activity-item ${type}`;
+            item.innerHTML = `
+                <span class="timestamp">${timestamp}</span>
+                <span class="agent-name">[${agent}]</span>
+                <div class="message">${message}</div>
+            `;
+            
+            feed.insertBefore(item, feed.firstChild);
+            
+            // Keep only last 15 items
+            while (feed.children.length > 15) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        window.addFeedbackToHub = function(source, text) {
+            const hub = document.getElementById('feedbackHub');
+            if (hub.children.length === 1 && hub.children[0].innerText.includes('Listening')) {
+                hub.innerHTML = '';
+            }
+            
+            const item = document.createElement('div');
+            item.style.marginBottom = '8px';
+            item.style.padding = '6px';
+            item.style.borderLeft = '2px solid #00ffff';
+            item.style.background = 'rgba(0, 255, 255, 0.05)';
+            item.innerHTML = `
+                <div style="font-size: 0.6rem; color: #888;">${new Date().toLocaleTimeString()} | ${source}</div>
+                <div>${text}</div>
+            `;
+            hub.insertBefore(item, hub.firstChild);
+        }
+
+        // Update agent status in the roster
+        function updateAgentStatus(agentName, status) {
+            const agentCards = document.querySelectorAll('.agent-card');
+            agentCards.forEach(card => {
+                const nameEl = card.querySelector('.agent-info h4');
+                if (nameEl && nameEl.textContent === agentName) {
+                    card.className = `agent-card ${status}`;
+                    const statusEl = card.querySelector('.agent-status');
+                    if (statusEl) {
+                        statusEl.className = `agent-status ${status}`;
+                        statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                    }
+                }
+            });
+        }
+
+        // Fetch initial agent status from API
+        async function fetchAgentStatus() {
+            try {
+                const response = await fetch('/api/agent-status');
+                const data = await response.json();
+                data.agents.forEach(agent => {
+                    updateAgentStatus(agent.name, agent.status);
+                });
+                document.getElementById('agentCount').textContent = `${data.total} Agents`;
+            } catch (error) {
+                console.log('[Dashboard] Could not fetch agent status:', error.message);
+            }
+        }
+
+        // Fetch recent logs from API
+        async function fetchRecentLogs() {
+            try {
+                const response = await fetch('/api/agent-logs');
+                const data = await response.json();
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.slice(0, 5).reverse().forEach(log => {
+                        addActivity(log.agent || 'SYSTEM', log.message || log.raw);
+                    });
+                }
+            } catch (error) {
+                console.log('[Dashboard] Could not fetch logs:', error.message);
+            }
+        }
+
+        // Fetch system metrics
+        async function fetchSystemMetrics() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                // Update RPM Status (Mock for now, but linked to metrics)
+                const mockRpm = Math.floor(Math.random() * 2) + 1;
+                document.getElementById('rpmStatus').textContent = `RPM: ${mockRpm}/4`;
+                
+                // Update CSS bars
+                document.querySelector('.rate-fill.gemini3').style.width = `${(mockRpm/4) * 100}%`;
+                
+                console.log('[Dashboard] Metrics updated:', data);
+            } catch (error) {
+                console.log('[Dashboard] Could not fetch metrics:', error.message);
+            }
+        }
+
+        // Fallback: Demo mode when WebSocket is not available
+        function startDemoMode() {
+            const demoMessages = [
+                ['CERBERUS', 'Behavioral pattern check: Normal operation.'],
+                ['SENTINEL', 'Memory usage: 45%. CPU: 12%.'],
+                ['ARGUS', 'Incoming message scanned: SAFE'],
+                ['ECHO', 'Analyzing user feedback patterns...'],
+                ['NEWTON', 'Math engine ready for calculation requests.'],
+                ['PRIME', 'Monitoring system health...'],
+                ['VULCAN', 'Standing by for code generation tasks.']
+            ];
+
+            let demoIndex = 0;
+            setInterval(() => {
+                const [agent, msg] = demoMessages[demoIndex % demoMessages.length];
+                addActivity(agent, msg);
+                demoIndex++;
+            }, 8000);
+        }
+
+        // Initialize dashboard
+        async function init() {
+            console.log('[Dashboard] Initializing CipherAxis Mission Control...');
+            
+            // Try to connect to backend
+            try {
+                await fetchAgentStatus();
+                await fetchRecentLogs();
+                await fetchSystemMetrics();
+                connectWebSocket();
+                
+                // Set up polling for system stats every 10s
+                setInterval(fetchSystemMetrics, 10000);
+                
+                // Mission Control Listener
+                document.getElementById('startMissionBtn').addEventListener('click', async () => {
+                    const request = document.getElementById('missionRequest').value;
+                    if (!request) return alert('Please enter a request');
+                    
+                    addActivity('SYSTEM', `Mission Initiated: ${request}`);
+                    document.getElementById('missionRequest').value = '';
+                    
+                    try {
+                        const response = await fetch('/api/mission', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ request })
+                        });
+                        const data = await response.json();
+                        console.log('[Dashboard] Mission started:', data);
+                    } catch (error) {
+                        console.error('[Dashboard] Error starting mission:', error);
+                    }
+                });
+                
+            } catch (error) {
+                console.log('[Dashboard] Backend not available, starting demo mode');
+                startDemoMode();
+            }
+        }
+
+        // Start when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
+
