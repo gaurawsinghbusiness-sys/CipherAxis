@@ -65,8 +65,15 @@ app.use(
   }),
 );
 
+// ROOT path health check (Render checks "/" by default)
+app.get("/", (req, res) => {
+  console.log("[Health Check] Root path hit - responding OK");
+  res.status(200).send("CipherAxis is running!");
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
+  console.log("[Health Check] /health path hit - responding OK");
   res.json({ 
     status: "healthy", 
     uptime: process.uptime(),
