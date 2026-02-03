@@ -6,8 +6,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
 import http from "http";
-import system from "../main.js";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -297,7 +295,7 @@ app.get("/api/google-sheets-feedback", async (req, res) => {
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 // Start server
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`
 ╔═══════════════════════════════════════════════════╗
 ║      🚀 CipherAxis Backend Server Running         ║
@@ -309,6 +307,13 @@ server.listen(PORT, () => {
 ║  Dashboard:      http://localhost:${PORT}/dashboard.html ║
 ╚═══════════════════════════════════════════════════╝
   `);
+
+  try {
+    console.log("[Backend] Initializing CipherAxis Agent System...");
+    const system = (await import("../main.js")).default;
+  } catch (error) {
+    console.error("[Backend] ❌ Failed to initialize CipherAxis System:", error);
+  }
 });
 
 export default { app, server, broadcastToClients };
