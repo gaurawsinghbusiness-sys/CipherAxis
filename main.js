@@ -10,7 +10,7 @@ import browserVerificationAgent from './Agents/CustomAgents/browser_verification
 import userbaseAnalystAgent from './Agents/CustomAgents/userbase_analyst_agent.js';
 import styleArchitectAgent from './Agents/CustomAgents/style_architect_agent.js';
 import unitTestAgent from './Agents/CustomAgents/unit_test_agent.js';
-import googleIntegrationAgent from './Agents/CustomAgents/google_integration_agent.js';
+// import googleIntegrationAgent from './Agents/CustomAgents/google_integration_agent.js'; // DISABLED: Not developed
 import identityAgent from './Agents/CustomAgents/identity_agent.js';
 import mathEngineAgent from './Agents/CustomAgents/math_engine_agent.js';
 import mathPrecisionAgent from './Agents/CustomAgents/math_precision_agent.js';
@@ -51,7 +51,7 @@ class CipherAxisSystem {
         orchestrator.registerAgent(identityAgent);
         
         // Strategy & Data Layer (4)
-        orchestrator.registerAgent(googleIntegrationAgent);
+        // orchestrator.registerAgent(googleIntegrationAgent); // DISABLED: NEXUS not developed
         orchestrator.registerAgent(userbaseAnalystAgent);
         orchestrator.registerAgent(mathEngineAgent);
         orchestrator.registerAgent(mathPrecisionAgent);

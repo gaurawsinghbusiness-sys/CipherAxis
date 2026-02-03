@@ -307,17 +307,19 @@ server.listen(PORT, () => {
 ║  Dashboard:      http://localhost:${PORT}/dashboard.html ║
 ╚═══════════════════════════════════════════════════╝
   `);
+  console.log("[Backend] Server is ready. Health check available at /health");
+  console.log("[Backend] Agents will initialize in 15 seconds...");
 
-  // NON-BLOCKING agent initialization (allows health check to pass immediately)
+  // DELAYED agent initialization - wait 15s for Render health check to pass first
   setTimeout(async () => {
     try {
       console.log("[Backend] Initializing CipherAxis Agent System...");
       const system = (await import("../main.js")).default;
       console.log("[Backend] ✅ Agent system initialized successfully!");
     } catch (error) {
-      console.error("[Backend] ❌ Failed to initialize CipherAxis System:", error);
+      console.error("[Backend] ❌ Failed to initialize CipherAxis System:", error.message);
     }
-  }, 100);
+  }, 15000);
 });
 
 export default { app, server, broadcastToClients };
