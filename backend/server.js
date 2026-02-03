@@ -295,7 +295,7 @@ app.get("/api/google-sheets-feedback", async (req, res) => {
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 // Start server
-server.listen(PORT, async () => {
+server.listen(PORT, () => {
   console.log(`
 ╔═══════════════════════════════════════════════════╗
 ║      🚀 CipherAxis Backend Server Running         ║
@@ -308,12 +308,16 @@ server.listen(PORT, async () => {
 ╚═══════════════════════════════════════════════════╝
   `);
 
-  try {
-    console.log("[Backend] Initializing CipherAxis Agent System...");
-    const system = (await import("../main.js")).default;
-  } catch (error) {
-    console.error("[Backend] ❌ Failed to initialize CipherAxis System:", error);
-  }
+  // NON-BLOCKING agent initialization (allows health check to pass immediately)
+  setTimeout(async () => {
+    try {
+      console.log("[Backend] Initializing CipherAxis Agent System...");
+      const system = (await import("../main.js")).default;
+      console.log("[Backend] ✅ Agent system initialized successfully!");
+    } catch (error) {
+      console.error("[Backend] ❌ Failed to initialize CipherAxis System:", error);
+    }
+  }, 100);
 });
 
 export default { app, server, broadcastToClients };
