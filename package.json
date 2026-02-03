@@ -13,6 +13,9 @@
     "security:test": "node scripts/run_pentests.js"
   },
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.2.1",
     "@langchain/core": "^1.1.18",
